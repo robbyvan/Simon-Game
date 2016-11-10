@@ -150,8 +150,10 @@ html, body, div, span, applet, object, iframe,
   font-size: 1.3em;
   line-height: 25px;
   color: #4B4C4B;
+  /*color: #430710;*/
  }
  .point h1 {
+  color: #430710;
   font-family: "VT323", sans-serif;
   font-size: 2em;
   border: 1px solid #4B4C4B;
@@ -159,7 +161,6 @@ html, body, div, span, applet, object, iframe,
   height: 28px;
   line-height: 25px;
   margin-left: 10px;
-  color: #DC0D29;
   background-color: #32050C;
   border-radius: 4px;
  }
@@ -226,7 +227,6 @@ html, body, div, span, applet, object, iframe,
   width: 48%;
   border-radius: 4px;
   position: relative;
-  /*left: 50%;*/
  }
  .switch-slot h3 {
   font-family: "Oswald", sans-serif;
@@ -276,4 +276,10 @@ html, body, div, span, applet, object, iframe,
 }
 .orangeOn {
   background-color: #FFB76E;
+}
+.switchOn {
+  left: 50%;
+}
+.pointOn {
+  color: #DC0D29 !important; 
 }
