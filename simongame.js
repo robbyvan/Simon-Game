@@ -43,7 +43,7 @@ $(document).ready(function(){
       });
     }else {
       //电源槽归位
-      clearInterval(gameStatus.lightOn);
+      resetTimers();
       $('.switch-btn').removeClass('light');
       //计数灯灭
       $('.point h1').removeClass('light');
@@ -88,11 +88,8 @@ function gameRun(){
   //按照顺序执行
   // gameStatus.stageSeq = setInterval(function(){
     //总循环, 每关步骤
-    //更新stage面板
-    // for (var i = 0; i < 4; i++){
     gameStatus.stage += 1;
-    $('.point h1').html(gameStatus.stage);
-
+    // for (var i = 0; i < 4; i++){
     //产生一个新颜色
     var newColor = Math.floor(4 * Math.random());
     gameStatus.sequence.push(newColor);
@@ -102,6 +99,8 @@ function gameRun(){
 }
 
 function showColors(){
+
+  $('.point h1').html(gameStatus.stage);
   gameStatus.player.length = 0;//初始化新一关
   var index = 0;
   if (index < gameStatus.sequence.length) {
@@ -123,6 +122,7 @@ function showColors(){
         //打开点击权限
         gameStatus.playerIndex = -1;
         gameStatus.lock = false;
+        gameStatus.evt = setTimeout(errReport, 5000);//五秒不按, 失败
       }
     }, 1000);
   }
@@ -130,7 +130,7 @@ function showColors(){
 
 function pushColor(pushedBar){
   // if (!gameStatus.lock) {
-    clearTimeout(gameStatus.wait);
+    clearTimeout(gameStatus.evt);
     gameStatus.playerIndex += 1;
     pushedBar.addClass('light');
     gameStatus.player.push(pushedBar.attr('id'));
@@ -140,7 +140,7 @@ function pushColor(pushedBar){
       //按对了
       if (gameStatus.playerIndex < (gameStatus.sequence.length-1) ) {
         //还没按完, 继续按
-        gameStatus.wait = setTimeout(loseGame, 5000);//五秒不按, 失败
+        gameStatus.evt = setTimeout(errReport, 5000);//五秒不按, 失败
       }else{
         //按完了
         // $('.bar').unbind('click', pushColor);
@@ -148,19 +148,46 @@ function pushColor(pushedBar){
         gameRun();//开始下一关
       }
     }else {
-      //按错了, 检查strict否
-      if (gameStatus.strict) {
-        //errReport();
-        loseGame();//重头再来
-      }else{
-        //提示一次
-        //errReport();
-        showColors();
-      }
+      errReport();
     }
-  // }
+}
+function errReport(){
+  flashErrMsg();
+  gameStatus.evt = setTimeout(function(){
+    if (gameStatus.strict) {
+      console.log('you lose!');
+      resetTimers();
+      gameInit();
+      gameRun();
+    }else{
+      console.log('try again!');
+      resetTimers();
+      showColors();
+    }
+  }, 2000);//提示错误2秒后开始
 }
 
-function loseGame(){
-  console.log("you lose!");
+function resetTimers(){
+  clearTimeout(gameStatus.evt);
+  clearTimeout(gameStatus.lightOff);
+  clearTimeout(gameStatus.flashOff);
+  clearInterval(gameStatus.lightOn);
+  clearInterval(gameStatus.flashOn);
+}
+
+function flashErrMsg(msg, duration){
+  resetTimers();
+  $('.point h1').html('!!');
+  var count = 0;
+  gameStatus.flashOn = setInterval(function(){
+    $('.point h1').addClass('light');
+    gameStatus.flashOff = setTimeout(function(){
+      $('.point h1').removeClass('light');
+      count += 1;
+      if (count >= duration) {
+        clearTimeout(gameStatus.flashOff);
+        clearInterval(gameStatus.flashOn);
+      }
+    }, 300);
+  }, 500);
 }

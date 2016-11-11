@@ -253,33 +253,33 @@ html, body, div, span, applet, object, iframe,
 .blue {
   background-color: #A2B8D1;
 }
-.greenClick {
+.t-l.light {
   background-color: #AAF249;
 }
-.redClick {
+.t-r.light {
   background-color: #FFBABA;
 }
-.yellowClick {
+.b-l.light {
   background-color: #FFF6A8;
 }
-.blueClick {
+.b-r.light {
   background-color: #C5E1FF;
 }
 .pink {
   background-color: #B24B3D;
 }
-.pinkOn {
+.start-btn.light {
   background-color: #FF6B57;
 }
 .orange {
   background-color: #B2804D;
 }
-.orangeOn {
+.strict-btn.light {
   background-color: #FFB76E;
 }
-.switchOn {
+.switch-btn.light {
   left: 50%;
 }
-.pointOn {
+.point h1.light {
   color: #DC0D29 !important; 
 }
