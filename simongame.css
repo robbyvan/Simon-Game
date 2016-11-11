@@ -277,9 +277,12 @@ html, body, div, span, applet, object, iframe,
 .strict-btn.light {
   background-color: #FFB76E;
 }
-.switch-btn.light {
+.switch-btn.swtichOn {
   left: 50%;
 }
 .point h1.light {
   color: #DC0D29 !important; 
+}
+.clickable {
+  cursor: pointer;
 }
