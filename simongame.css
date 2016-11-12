@@ -241,18 +241,7 @@ html, body, div, span, applet, object, iframe,
 .inline {
   display: inline-block;
  }
-.green {
-  background-color: #AFD17F;
-}
-.red {
-  background-color: #D19999;
-}
-.yellow {
-  background-color: #D1CA8A;
-}
-.blue {
-  background-color: #A2B8D1;
-}
+
 .t-l.light {
   background-color: #AAF249;
 }
@@ -265,14 +254,8 @@ html, body, div, span, applet, object, iframe,
 .b-r.light {
   background-color: #C5E1FF;
 }
-.pink {
-  background-color: #B24B3D;
-}
 .start-btn.light {
   background-color: #FF6B57;
-}
-.orange {
-  background-color: #B2804D;
 }
 .strict-btn.light {
   background-color: #FFB76E;
