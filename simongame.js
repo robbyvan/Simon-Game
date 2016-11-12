@@ -18,21 +18,24 @@ var gameStatus = {
 
 $(document).ready(function(){
   /*prepare for the audio*/
-  var context = new AudioContext();
+  context = new AudioContext();
+  ramp = 0.1;
+  volume = 0.5;
   var errfreq = 110;
   var frequencies = [400, 300, 250, 200];
+  
 
   var errOsc = context.createOscillator();
   errOsc.type = 'triangle';
   errOsc.frequency.value = errfreq;
   errOsc.start(0.0);
 
-  var errNode = context.createGain();
+  errNode = context.createGain();
   errOsc.connect(errNode);
-  errOsc.gain.value = 0;
+  errNode.gain.value = 0;
   errNode.connect(context.destination);
 
-  var goodOsc = frequency.map(function(freq){
+  var goodOsc = frequencies.map(function(freq){
     var osc = context.createOscillator();
     osc.type = 'sine';
     osc.frequency.value = freq;
@@ -40,7 +43,7 @@ $(document).ready(function(){
     return osc;
   });
 
-  var goodNodes = goodOsc.map(function(osc){
+  goodNodes = goodOsc.map(function(osc){
     var gNode = context.createGain();
     osc.connect(gNode);
     gNode.connect(context.destination);
@@ -56,15 +59,75 @@ $(document).ready(function(){
     }else {
       powerOff();
     }
-
+  });
+  //监控bar点击事件
+  $('.bar').mousedown(function(e){
+    e.stopPropagation(e);
+    if (!gameStatus.lock) {
+      // pushColor($(this));
+      turnOnSnL($(this).attr('id'));
+    }
+  });
+  $('.bar').mouseup(function(e){
+    e.stopPropagation(e);
+    if (!gameStatus.lock) {
+      // turnOffSnL();
+      pushColor($(this));
+      // $('.bar').removeClass('light');//replaced
+    }
+  });
+  //点击样式
+  $('.start-btn').mousedown(function(e){
+    $(this).addClass('pushing');
+  });
+  $('.start-btn').mouseup(function(e){
+    e.stopPropagation(e);
+    $(this).removeClass('pushing');
+  });
+  //点击样式
+  $('.strict-btn').mousedown(function(e){
+    $(this).addClass('pushing');
+  });
+  $('.strict-btn').mouseup(function(e){
+    e.stopPropagation(e);
+    $(this).removeClass('pushing');
   });
 });
 
+function turnOnSnL(index){
+  goodNodes[index].gain.linearRampToValueAtTime(volume, context.currentTime + ramp);
+  gameStatus.pushed = $('#' + index);
+  gameStatus.pushed.addClass('light');
+}
+
+function turnOffSnL(){
+  // if (gameStatus.pushed) {
+    // gameStatus.pushed.removeClass('light');
+  // }
+  $('.bar').removeClass('light');
+  goodNodes.forEach(function(g){
+    g.gain.linearRampToValueAtTime(0, context.currentTime + ramp);
+  });
+  gameStatus.pushed = undefined;
+  // gameStatus.currOsc = undefined;//????
+}
+
+function playErrTone(){
+  errNode.gain.linearRampToValueAtTime(volume, context.currentTime + ramp);
+}
+
+function stopErrTone(){
+  errNode.gain.linearRampToValueAtTime(0, context.currentTime + ramp);
+}
+
 function gameInit(){
   resetTimers(); // reset all timers
+  stopErrTone();
+  turnOffSnL();
   gameStatus.sequence.length = 0; //reset the sequence
   gameStatus.player.length = 0; //reset the player's sequence
   gameStatus.stage = 0; //back to inital stage
+  gameStatus.playerIndex = -1;
   $('.point h1').html('--');//back to inital stage
   gameStatus.lock = true; //don't allow click bars
   $('.bar').removeClass('clickable');//don't allow click bars
@@ -81,18 +144,6 @@ function powerOn(){
   //允许点击start和strict按钮
   $('.start-btn').on('click', startAllow);
   $('.strict-btn').on('click', strictAllow);
-  //监控bar点击事件
-  $('.bar').mousedown('click', function(){
-    if (!gameStatus.lock) {
-      pushColor($(this));
-    }
-  });
-  $('.bar').mouseup(function(e){
-    e.stopPropagation(e);
-    if (!gameStatus.lock) {
-      $('.bar').removeClass('light');
-    }
-  });  
 }
 
 function powerOff(){
@@ -103,8 +154,10 @@ function powerOff(){
   //计数灯灭, 显示'--'
   $('.point h1').removeClass('light').html('--');
   //bar不可点击
+  turnOffSnL();
+  stopErrTone();
   gameStatus.lock = true;
-  $('.bar').removeClass('clickable');
+  $('.bar').removeClass('clickable').removeClass('light');
   //关按钮灯, 解除鼠标clickable效果
   $('.start-btn').removeClass('light').removeClass('clickable');
   $('.strict-btn').removeClass('light').removeClass('clickable');
@@ -115,6 +168,7 @@ function powerOff(){
 
 function startAllow(){
   console.log("player clicked start.");
+  gameInit();
   gameRun();
 }
 
@@ -134,7 +188,6 @@ function gameRun(){
   /*按对了进来时有一个timeout gameStatus.evt*/
 
   //设定样式
-    gameStatus.lock = true;//显示时不允许点击bar
     $('.bar').removeClass('clickable');//显示时不允许点击bar
 
   //关卡+1, 产生一个新颜色
@@ -159,19 +212,22 @@ function showColors(){
   
   /*循环显示颜色, 1000ms一次*/
   gameStatus.lightOn = setInterval(function(){
+    gameStatus.lock = true;//显示时不允许点击bar
     var currColor = gameStatus.sequence[index];//当前颜色
-    index++;//显示了一个灯,计数+1
     console.log("displaying " + index + "st light");
 
     /*light + sound, 亮灯操作, 目前缺少音效*/
-    $('#' + currColor).addClass('light');
+    turnOnSnL(currColor);
+    // $('#' + currColor).addClass('light');//replaced
     /*保持light+sound一段时间(500ms), 然后关灯关声音*/
     gameStatus.lightOff = setTimeout(function(){
       /*关灯关声音*/
-      $('#' + currColor).removeClass('light');
+      turnOffSnL();
+      // $('#' + currColor).removeClass('light');//replaced
       console.log("turning off the light");
     }, 500);
 
+    index++;//显示了一个灯,计数+1
     /*在每次显示一个灯后, 确认当前序列显示是否完成*/
     if (index >= gameStatus.sequence.length){
       /*结束循环, 关lightOn定时器*/
@@ -196,10 +252,14 @@ function pushColor(pushedBar){
 
   /*用户已按数目+1*/
   gameStatus.playerIndex += 1;
-  pushedBar.addClass('light');//??????只开灯, 因为不知flasherr最终状态
+  // pushedBar.addClass('light');//??????只开灯, 因为不知flasherr最终状态, what?
+  var pushedColor = parseInt(pushedBar.attr('id'));
+  // turnOnSnL(pushedColor);
+  turnOffSnL();
 
   /*保存用户输入? 貌似没必要存用户所有输入?*/
-  gameStatus.player.push(pushedBar.attr('id'));
+  gameStatus.player.push(pushedColor);
+  // gameStatus.player.push(pushedBar.attr('id'));
   var currColor = gameStatus.player[gameStatus.playerIndex];//可以直接取点击bar的id
 
   if (currColor == gameStatus.sequence[gameStatus.playerIndex]) {
@@ -208,17 +268,49 @@ function pushColor(pushedBar){
       //但还没按完, 要继续按, 只需重新建立timeout timer
         gameStatus.evt = setTimeout(errReport, 5000);//五秒不按, 失败
     }else{
-      //按完了, 延时1s进入下一关
-      gameStatus.evt = setTimeout(gameRun, 1000);//开始下一关
+      //按完了, 延时1s进入下一关, modified
+      $('.bar').removeClass('clickable');
+      gameStatus.lock = true;
+      gameRun();//开始下一关
     }
     }else {
       //按错了
-      errReport();
+      gameStatus.lock = true;
+      errReport(pushedBar);
     }
 }
-function errReport(){
+function errReport(pushedObj){
   flashErrMsg(2);
-
+  gameStatus.lock = true;
+  $('.bar').removeClass('clickable');
+  
+  var count = 0;
+  gameStatus.lightOn = setInterval(function(){
+    if (pushedObj) {
+      pushedObj.addClass('light');
+    }
+    playErrTone();
+    gameStatus.lightOff = setTimeout(function(){
+      stopErrTone();
+      if (pushedObj) {
+        pushedObj.removeClass('light');
+      }
+    }, 250);
+    if (count >= 2) {
+        stopErrTone();
+        clearTimeout(gameStatus.lightOff);
+        clearInterval(gameStatus.lightOn);
+    }
+  }, 500);
+  // if (pushedObj) {
+    // pushedObj.addClass('light');
+  // }
+  // gameStatus.lightOff = setTimeout(function(){
+  //   stopErrTone();
+  //   if (pushedObj) {
+  //     pushedObj.removeClass('light');
+  //   }
+  // }, 1000);
   /*提示错误flashErr: 2000ms*/
   gameStatus.evt = setTimeout(function(){
     if (gameStatus.strict) {
@@ -228,6 +320,8 @@ function errReport(){
     }else{
       console.log('try again!');
       resetTimers();
+      $('.bar').removeClass('light');
+      stopErrTone();
       gameStatus.evt = setTimeout(showColors, 2000);
     }
   }, 2000);

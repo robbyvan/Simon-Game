@@ -286,3 +286,6 @@ html, body, div, span, applet, object, iframe,
 .clickable {
   cursor: pointer;
 }
+.pushing {
+  box-shadow: none;
+}
