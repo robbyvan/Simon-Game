@@ -17,6 +17,37 @@ var gameStatus = {
 };
 
 $(document).ready(function(){
+  /*prepare for the audio*/
+  var context = new AudioContext();
+  var errfreq = 110;
+  var frequencies = [400, 300, 250, 200];
+
+  var errOsc = context.createOscillator();
+  errOsc.type = 'triangle';
+  errOsc.frequency.value = errfreq;
+  errOsc.start(0.0);
+
+  var errNode = context.createGain();
+  errOsc.connect(errNode);
+  errOsc.gain.value = 0;
+  errNode.connect(context.destination);
+
+  var goodOsc = frequency.map(function(freq){
+    var osc = context.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    osc.start(0.0);
+    return osc;
+  });
+
+  var goodNodes = goodOsc.map(function(osc){
+    var gNode = context.createGain();
+    osc.connect(gNode);
+    gNode.connect(context.destination);
+    gNode.gain.value = 0;
+    return gNode;
+  });
+
   $('.switch').on('click', function(){
     gameStatus.power = !gameStatus.power;
 
