@@ -18,6 +18,19 @@ var gameStatus = {
 
 $(document).ready(function(){
   /*prepare for the audio*/
+  // Checking for Web Audio API on your browser ...
+  var AudioContext = window.AudioContext // Default
+    || window.webkitAudioContext // Safari and old versions of Chrome
+    || false;
+
+  if(!AudioContext) {
+
+    // Sorry, but the game won't work for you
+    alert('Sorry, but the Web Audio API is not supported by your browser.'
+    + ' Please, consider downloading the latest version of '
+    + 'Google Chrome or Mozilla Firefox');
+
+  }else{
   context = new AudioContext();
   ramp = 0.1;
   volume = 0.5;
@@ -92,6 +105,7 @@ $(document).ready(function(){
     e.stopPropagation(e);
     $(this).removeClass('pushing');
   });
+  }
 });
 
 function turnOnSnL(index){
